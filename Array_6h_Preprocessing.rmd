@@ -1,0 +1,509 @@
+---
+title: 'dHPC gene expression 6 hours post-LPS: Data pre-processing and normalization'
+author: "G. Lewandowski"
+date: "February 17, 2017"
+output: github_document
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(cache=TRUE)
+```
+
+When working with Affymetrix GeneChip Gene ST arrays there are three steps necessary before indentification of differentially expressed genes (DEGs): 
+- Background correction
+- Normalization
+- Summarization of probesets or transcripts
+
+Using the `oligo` package in Bioconductor the three steps can be easily done sequentially.  
+
+The background-corrected/normalized expression data is then filtered to contain only the main probes (by excluding the Affy-controls) and to exclude the probes that are either not expressed or expressed at very low levels in at least 5 of the 6 samples.     
+  
+### Load the required libraries   
+`oligo` package for preprocessing of lpsrawdata   
+`pd.ragene.1.0.st.v1` and `ragene10stprobeset.db` are used for annotation of the probesets on the Affymetrix Rat Gene ST v. 01 genechip.   
+
+```{r load libraries, results='hide'}
+
+suppressPackageStartupMessages({
+    library(oligo)
+    library(pd.ragene.1.0.st.v1)
+    library(ragene10stprobeset.db)
+    library(RColorBrewer)
+        })
+```
+
+### Load **lpsrawdata.6h** `GeneFeatureSet` object generated during the QC step.
+
+```{r load lpsrawdata}
+load(file = file.path("processedData", "lpsrawdata_6h.Rdata")) 
+```
+
+### Preprocessing.  
+A classic and powerful method for preprocessing Affymetrix gene expression arrays is the RMA method (Robust Multichip Average). The RMA alogorithm applies the largest relative adjustments to the lowest probe intensities and preserves the order of probe intensities relative to the distribution of probe intensities. Applying the `rma()` function from the `oligo` package results in   
+(1) RMA background correction,   
+(2) quantile normalization and   
+(3) probe summarization into probesets via the median-polish method.   
+
+When applied to a GeneFeatureSet object, `rma()` can produce summaries at different levels: probeset (as defined in the PGF) and 'core genes' (as defined in the core.mps file). Affymetrix made available meta-probeset files (MPS) that define "new probesets", which allow summarization to the gene-level. For gene arrays, there's "core" MPS. We will summarize to the gene-level.
+=======
+#### Setup the Analysis directory as the working directory and load the `oligo` package for preprocessing of lpsrawdata: 
+
+```{r working directory and load oligo pkg, results='hide'}
+
+# directory for all analysis files and main working directory:
+setwd("D:/MicroarrayData/Microarray_LPS rats/Analysis_6h_v2")
+
+suppressPackageStartupMessages({
+        library(oligo)
+        library(pd.ragene.1.0.st.v1)
+        library(ragene10stprobeset.db)
+        })
+```
+
+#### Load **lpsrawdata_6h.rda** `GeneFeatureSet` object generated during the QC step.
+
+```{r load lpsrawdata, cache=TRUE}
+load("lpsrawdata_6h.rda") # lpsrawdata.6h
+```
+
+### Preprocessing.  
+A classic and powerful method for preprocessing Affymetrix gene expression arrays is the RMA method (Robust Multichip Average). The RMA alogorithm applies the largest relative adjustments to the lowest probe intensities and preserves the order of probe intensities relative to the distribution of probe intensities. Applying the `rma` function from the `oligo` package results in (1) RMA background correction, (2) quantile normalization and (3) probe summarization into probesets via the median-polish method.  
+When applied to a GeneFeatureSet object, rma can produce summaries at different levels: probeset (as defined in the PGF) and 'core genes' (as defined in the core.mps file). Affymetrix made available meta-probeset files (MPS) that define "new probesets", which allow summarization to the gene-level. For gene arrays, there's "core" MPS. We will summarize to the gene-level.
+>>>>>>> 015d9bd588e0c19cb256adc330b3d6b19a0071ae
+
+The background-corrected/normalized expression data is then filtered to contain only the main probes (by excluding the Affy-controls).  
+
+```{r RMA gene-level, cache=TRUE}
+<<<<<<< HEAD
+# RMA background correction, quantile normaization, 
+# summarization to the core gene level
+
+filepath <- file.path("processedData", "RMA_6h_lpsdata.Rdata")
+if (file.exists(filepath)){
+        load(filepath)
+} else {
+        RMA.lpsdata.6h <- rma(lpsrawdata.6h, background=TRUE, normalize=TRUE, target="core") # 29214 features
+        
+        # get the 'main' type of probesets from the Gene ST arrays
+        # using the getMainProbes function from the affycoretools package
+        RMA.lpsdata.6h <- suppressMessages(affycoretools::getMainProbes(RMA.lpsdata.6h))
+                # 27342 features
+        
+        save(RMA.lpsdata.6h, file=filepath)
+}   
+n <- length(featureNames(RMA.lpsdata.6h))
+```
+
+There are `r n` main probes in the RMA background-corrected/normalized expression data set (hereafter referred to as `RMA.lpsdata.6h`).   
+
+#### Intensity distribution of RMA-background corrected/normalized arrays.  
+
+Histograms and boxplots of array intensities:   
+
+```{r intensity distribution_01, cache=TRUE, fig.align='center', fig.height=6, fig.width=10}
+
+usr.col <- brewer.pal(6, "Dark2")
+set.seed(1234)
+par(mfrow = c(1,2))
+
+hist(RMA.lpsdata.6h, transfo=identity,  
+     lty = rep(1, 6), 
+     lwd = rep(1.75, 6), 
+     col = usr.col, 
+     main = "RMA Main Probes: Histograms")
+legend("topright", sampleNames(RMA.lpsdata.6h), 
+       lty = rep(1, 6), lwd = rep(2, 6), col = usr.col, cex = 0.75)
+
+set.seed(1234)
+boxplot(RMA.lpsdata.6h, transfo=identity,  
+        col = usr.col, 
+        las =3, cex.axis = 0.75, 
+        names = sampleNames(RMA.lpsdata.6h), 
+        main = "RMA Main Probes: Distributionss")
+```
+
+=======
+# RMA background correction, quantile normaization, summarization to the core gene level
+
+if (file.exists("D:/MicroarrayData/Microarray_LPS rats/Analysis_6h_v2/RMA_6h_lpsdata.rda")){
+        load("D:/MicroarrayData/Microarray_LPS rats/Analysis_6h_v2/RMA_6h_lpsdata.rda")
+} else {
+        RMA_lpsdata.6h <- rma(lpsrawdata.6h, background=TRUE, normalize=TRUE, target="core") # 29214 features
+        # get the 'main' type of probesets from the Gene ST arrays
+        # using the getMainProbes function from the affycoretools package
+        RMA_lpsdata.6h <- suppressMessages(affycoretools::getMainProbes(RMA_lpsdata.6h))
+                # 27342 features
+        
+        save(RMA_lpsdata.6h, file="D:/MicroarrayData/Microarray_LPS rats/Analysis_6h_v2/RMA_6h_lpsdata.rda")
+}   
+n <- length(featureNames(RMA_lpsdata.6h))
+```
+
+
+There are `r n` main probes in the RMA background-corrected/normalized expression data set (hereafter referred to as `RMA_6h_lpsdata`).   
+>>>>>>> 015d9bd588e0c19cb256adc330b3d6b19a0071ae
+
+### Gene Filtering   
+Probes with low expression (intensity) in 5 of 6 samples (regardless of sample group) are excluded from the expression data set.  The reason for this is because the low expression probes do not add any information to the analysis, but instead add noise that can obscure real information during the selection of differentially expressed genes.  Importantly, low variance genes **ARE NOT** filtered out, so that variance shrinkage and moderated t-statistic calculations are not impacted. 
+
+Gene filtering procedure:   
+1. determine the summary statistics for the probe expression distribution.   
+2. set the filter at the first quantile (25%).   
+3. filter the expression data to include only genes with intensity values greater than the filter value on 2 of 6 arrays.  
+
+<<<<<<< HEAD
+```{r summarystats RMA.lpsdata.6h, echo=FALSE}
+
+min_expr <- signif(min(exprs(RMA.lpsdata.6h)), 3)
+firstquant <- signif(quantile(exprs(RMA.lpsdata.6h))[[2]], 3)
+median_expr <- signif(median(exprs(RMA.lpsdata.6h)), 3)
+mean_expr <- signif(mean(exprs(RMA.lpsdata.6h)), 3)
+thirdquant <- signif(quantile(exprs(RMA.lpsdata.6h))[[4]], 3)
+max_expr <- signif(max(exprs(RMA.lpsdata.6h)), 4)
+
+df1 <- data.frame(min_expr, firstquant, median_expr, 
+                  mean_expr, thirdquant, max_expr)
+colnames(df1) <- c("Min", "1st Quant.", "Median", 
+                   "Mean", "3rd Quant.", "Max" )
+=======
+```{r summarystats RMA_lpsdata.6h, echo=FALSE}
+min_expr <- signif(min(exprs(RMA_lpsdata.6h)), 3)
+firstquant <- signif(quantile(exprs(RMA_lpsdata.6h))[[2]], 3)
+median_expr <- signif(median(exprs(RMA_lpsdata.6h)), 3)
+mean_expr <- signif(mean(exprs(RMA_lpsdata.6h)), 3)
+thirdquant <- signif(quantile(exprs(RMA_lpsdata.6h))[[4]], 3)
+max_expr <- signif(max(exprs(RMA_lpsdata.6h)), 4)
+
+df1 <- data.frame(min_expr, firstquant, median_expr, mean_expr, thirdquant, max_expr)
+colnames(df1) <- c("Min", "1st Quant.", "Median", "Mean", "3rd Quant.", "Max" )
+>>>>>>> 015d9bd588e0c19cb256adc330b3d6b19a0071ae
+```
+
+The following table shows the minimun, first quantile, median, mean, third quantile and maximum expression values for the `RMA_lpsdata.6h` data set.   
+
+```{r df1, echo=TRUE, cache=TRUE}
+library(pander)
+<<<<<<< HEAD
+pander(df1, caption = "RMA_lpsdata.6h: Summary Statistics", 
+       caption.placement = "top")
+=======
+pander(df1, caption = "RMA_lpsdata.6h: Summary Statistics", caption.placement = "top")
+>>>>>>> 015d9bd588e0c19cb256adc330b3d6b19a0071ae
+```
+
+
+The similarity between the mean and median indicates a normal distribution of expression values.  A filter value of `r firstquant` (first quantile) can be used to exclude low expression probes.   
+
+```{r low intensity gene filters}
+<<<<<<< HEAD
+# filter ExpressionSet for probes with expression > first quantile 
+# on at least 2 of the 6 arrays using the `genefilter` library.
+
+filepath <- file.path("processedData", "RMA.lpsdata.6h_filt.Rdata")
+
+if(file.exists(filepath)) {
+    load(filepath)
+} else {
+    lowexprfilter <- firstquant
+    f1 <- genefilter::kOverA(2, lowexprfilter)
+    i1 <- genefilter::genefilter(RMA.lpsdata.6h, f1)
+    RMA.lpsdata.6h_filt <- RMA.lpsdata.6h[i1,]
+    # 20891 features
+    
+    save(RMA.lpsdata.6h_filt, file = filepath)
+}
+```
+
+
+```{r summarystats RMA.lpsdata.6h_filt, echo=FALSE}
+
+min_expr <- signif(min(exprs(RMA.lpsdata.6h_filt)), 3)
+firstquant <- signif(quantile(exprs(RMA.lpsdata.6h_filt))[[2]], 3)
+median_expr <- signif(median(exprs(RMA.lpsdata.6h_filt)), 3)
+mean_expr <- signif(mean(exprs(RMA.lpsdata.6h_filt)), 3)
+thirdquant <- signif(quantile(exprs(RMA.lpsdata.6h_filt))[[4]], 3)
+max_expr <- signif(max(exprs(RMA.lpsdata.6h_filt)), 4)
+
+df2 <- data.frame(min_expr, firstquant, median_expr, 
+                  mean_expr, thirdquant, max_expr)
+colnames(df2) <- c("Min", "1st Quant.", "Median", 
+                   "Mean", "3rd Quant.", "Max" )
+m <- length(featureNames(RMA.lpsdata.6h_filt)) # 20891
+=======
+# filter ExpressionSet for probes with expression > the first quantile on at least 2 of the 6 arrays using the `genefilter` library.
+        lowexprfilter <- firstquant
+        f1 <- genefilter::kOverA(2, lowexprfilter)
+        i1 <- genefilter::genefilter(RMA_lpsdata.6h, f1)
+        RMA_6h_filtered <- RMA_lpsdata.6h[i1,]
+        save(RMA_6h_filtered, file = "D:/MicroarrayData/Microarray_LPS rats/Analysis_6h_v2/RMA_6h_filtered.rdata")
+        # 20891 features
+```
+
+```{r cleanup1, echo=FALSE, results='hide'}
+rm(firstquant, max_expr, mean_expr, median_expr, min_expr, thirdquant, lowexprfilter, f1, i1, dt)
+```
+
+```{r summarystats RMA_6h_filtered, echo=FALSE}
+min_expr <- signif(min(exprs(RMA_6h_filtered)), 3)
+firstquant <- signif(quantile(exprs(RMA_6h_filtered))[[2]], 3)
+median_expr <- signif(median(exprs(RMA_6h_filtered)), 3)
+mean_expr <- signif(mean(exprs(RMA_6h_filtered)), 3)
+thirdquant <- signif(quantile(exprs(RMA_6h_filtered))[[4]], 3)
+max_expr <- signif(max(exprs(RMA_6h_filtered)), 4)
+
+df2 <- data.frame(min_expr, firstquant, median_expr, mean_expr, thirdquant, max_expr)
+colnames(df2) <- c("Min", "1st Quant.", "Median", "Mean", "3rd Quant.", "Max" )
+m <- length(featureNames(RMA_6h_filtered)) # 20891
+>>>>>>> 015d9bd588e0c19cb256adc330b3d6b19a0071ae
+```
+
+Using the low expression filter `r n - m` probes have been excluded from the expression set, leaving `r m` probes for further processing. 
+
+The following table shows the minimun, first quantile, median, mean, third quantile and maximum expression values for the new expression data set.   
+
+```{r df2, echo=TRUE, results='asis', cache=TRUE}
+library(pander)
+<<<<<<< HEAD
+pander(df2, caption = "Filtered RMA_lpsdata.6h: Summary Statistics", 
+       caption.placement = "top")
+```
+
+#### Inspection of the lowly expressed-filtered, RMA-processed array data.
+
+Histograms and boxplots of array intensities:  
+
+```{r intensity distribution_02, cache=TRUE, fig.align='center', fig.height=6, fig.width=8}
+
+set.seed(2345)
+par(mfrow = c(1,2))
+
+hist(RMA.lpsdata.6h_filt, transfo=identity,  
+     lty = rep(1, 6), lwd = rep(1.75, 6), 
+     col = usr.col, 
+     main = "Filtered RMA Probes: Histograms")
+legend("topright", 
+       sampleNames(RMA.lpsdata.6h_filt), 
+       lty = rep(1, 6), lwd = rep(2, 6), 
+       col = usr.col, cex = 0.75)
+
+set.seed(2345)
+boxplot(RMA.lpsdata.6h_filt, transfo=identity,  
+        col = usr.col, las =3, cex.axis = 0.75, 
+        names = sampleNames(RMA.lpsdata.6h_filt), 
+        main = "Filtered RMA Probes: Distributions")
+```
+
+```{r cleanup2, echo=FALSE, results='hide'}
+rm(firstquant, max_expr, mean_expr, median_expr, 
+   min_expr, thirdquant, n, m, df1, df2,
+   RMA.lpsdata.6h)
+```
+
+#### MA plots:  
+
+```{r core genes within groups MA plots, cache=TRUE, fig.align='center', results='hold', collapse=TRUE}
+par(mfrow = c(1,1))
+yl = c(-4,2)
+# MA plot for the saline control group at 6 hours (rats 1,3,5)
+oligo::MAplot(RMA.lpsdata.6h_filt[, RMA.lpsdata.6h_filt$group == "sal.6h"],
+              transfo=identity, pairs=TRUE, 
+              main="Saline 6 hours", ylim=yl)
+
+# MA plot for the lps treated group at 6 hours (rats 2,4,24)
+MAplot(RMA.lpsdata.6h_filt[, RMA.lpsdata.6h_filt$group == "lps.6h"],
+       pairs=TRUE, main ="LPS 6 hours", ylim=yl)
+
+# MA plot for 6 h lps vs reference 6 h saline
+RMA.lpsdata.6h_filt$group <- relevel(as.factor(RMA.lpsdata.6h_filt$group),
+                                     ref="sal.6h")
+groups <- (RMA.lpsdata.6h_filt$group)
+suppressMessages(MAplot(RMA.lpsdata.6h_filt, 
+                        groups=groups, which=2, refSamples=1))
+
+```
+
+#### Relationships between samples using heirarchical clustering:
+
+```{r heirarchical clustering, cache=TRUE}
+exprDat <- exprs(RMA.lpsdata.6h_filt)
+distance <- dist(t(exprDat), method = "maximum")
+clusters <- hclust(distance)
+plot(clusters)
+abline(h = 4.5, col = "red")
+```
+
+=======
+pander(df2, caption = "Filtered RMA_lpsdata.6h: Summary Statistics", caption.placement = "top")
+```
+
+```{r cleanup2, echo=FALSE}
+rm(firstquant, max_expr, mean_expr, median_expr, min_expr, thirdquant, n, m, df1, df2)
+```
+
+### Annotation   
+Here the Entrez gene Ids and probe Ids will be added as 
+
+```{r annotation}        
+        # annotate the ExpressionSet with probe ids
+        suppressMessages(library(ragene10sttranscriptcluster.db))
+        
+        fdata <- as.data.frame(featureNames(RMA_6h_filtered))
+        # change the column name
+        colnames(fdata) <- "PROBEID"
+        
+        # get gene names, symbol and ENTREZ ids that correspond to the probe ids
+        gns <- suppressMessages(select(ragene10sttranscriptcluster.db, featureNames(RMA_6h_filtered),
+              c("ENTREZID", "SYMBOL","GENENAME")))
+        
+        # remove multiple mappings
+        gns <- gns[!duplicated(gns$PROBEID),]
+        
+        # merge the fdata data frame with the annotation data frame
+        fdata <- merge(fdata, gns, by.x = "PROBEID", by.y = "PROBEID")
+        fdata <- fdata[order(fdata$PROBEID),]
+        row.names(fdata) <- fdata$PROBEID
+        fData(RMA_6h_filtered) <- fdata  # 20891
+        
+        # remove features that do not have an ENTREZID
+        RMA_6h_filtered_anno <- RMA_6h_filtered[is.na(fData(RMA_6h_filtered)$ENTREZID) == FALSE]  # 17488 features
+
+       # remove features that have a symbol beginning with LOC or RGD or MGC
+        RMA_6h_filtered_anno<- RMA_6h_filtered_anno[! substr(fData(RMA_6h_filtered_anno)$SYMBOL, 1, 3) %in% c("LOC", "RGD", "MGC")]  # 16374
+        
+        # remove multiple Entrez ID mappings
+         RMA_6h_filtered_anno <- RMA_6h_filtered_anno[!duplicated(fData(RMA_6h_filtered_anno)$ENTREZID)]  #14922
+        
+        # relevel groups so that sal.6h is the reference group
+        RMA_6h_filtered_anno$group <- factor(RMA_6h_filtered_anno$group)
+        RMA_6h_filtered_anno$group <- relevel(RMA_6h_filtered_anno$group, ref = "sal.6h")
+        save(RMA_6h_filtered_anno, file="D:/MicroarrayData/Microarray_LPS rats/Analysis_6h_v2/RMA_6h_filtered_anno.rdata")
+        rm(fdata, gns)
+        RMA_6h_filtered_anno  # 14922 features
+```
+
+
+### Inspection of the processed array data.
+>>>>>>> 015d9bd588e0c19cb256adc330b3d6b19a0071ae
+
+#### Probe level model
+Looking for probe effects in the normalized data; PLM fits a model and outputs a number of statistics that are used for quality diagnostics.
+
+<<<<<<< HEAD
+```{r PLM RMA.lpsdata.6h_filt, cache=TRUE, results= 'hide'}
+# probe level model on raw lps data: 
+# background corrected and normalized (RMA)
+# summarization target = 'core', background correction = T, normalization = T
+
+filepath <- file.path("processedData", "plm.filt.RMA.6h.lps.Rdata")
+
+# load the plm for plm_rma_6h if it already exists, else, generate the plm
+if (file.exists(filepath)){
+    load(filepath)
+    
+} else {
+    plm.rma.6h <- fitProbeLevelModel(lpsrawdata.6h, target = "core", 
+                                     background = TRUE, normalize = TRUE)
+    
+    save(plm.rma.6h, file = filepath)
+}
+rm(lpsrawdata.6h)
+=======
+```{r PLM lpsdata.core, cache=TRUE, results= 'hide'}
+# probe level model on raw lps data: background corrected and normalized (RMA)
+# summarization target = 'core', background correction = F, normalization = F
+
+# load the plm for plm_rma_6h if it already exists, else, generate the plm
+if (file.exists("plm_rma_6h.rda")){
+    load("plm_rma_6h.rda")
+} else {
+    plm_rma_6h <- fitProbeLevelModel(lpsrawdata.6h, target = "core", background = TRUE, normalize = TRUE)
+    save(plm_rma_6h, file = "plm_rma_6h.rda")
+    
+    rm(lpsrawdata.6h)
+}
+>>>>>>> 015d9bd588e0c19cb256adc330b3d6b19a0071ae
+```
+
+##### Relative log expression and Normalized Unscaled Standard Error:
+
+**Relative Log Expression (RLE)** plot is constructed from the PLM model.  For each array the RLE plot is a box plot of the relative expression for each gene- which is defined as the difference of the PLM estimated gene expression an the median expression.  
+
+**Normalized Unscaled Standard Error (NUSE)** for each gene is defined as the PLM fit standard error minus the median standard error across all the arrays.  The median standard error for any probeset should be 1 across all the arrays.  A NUSE value significantly higher from other samples likely indicates a lower quality chip (array).  
+
+<<<<<<< HEAD
+```{r plm.rma.6h RLE Nuse, cache=TRUE}
+par(mfrow = c(1,2))
+# box plots of RLE values for the normalized data
+RLE(plm.rma.6h, type = "plot",las =3, cex.axis = 0.75, names = sampleNames(RMA.lpsdata.6h_filt), main = "RLE")
+
+# box plots of NUSE values for the normalized data, 
+# summarized to the core genes level
+NUSE(plm.rma.6h, type = "plot",las =3, cex.axis = 0.75, names = sampleNames(RMA.lpsdata.6h_filt), main = "NUSE")
+```
+
+```{r final cleanup, echo=FALSE, results='hide'}
+rm(filepath, yl, usr.col, exprDat, 
+   clusters, distance, groups, plm.rma.6h)
+```
+
+=======
+```{r plm_rma_6h RLE Nuse, cache=TRUE}
+par(mfrow = c(1,2))
+# box plots of RLE values for the normalized data
+RLE(plm_rma_6h, type = "plot",las =3, cex.axis = 0.75, names = sampleNames(RMA_lpsdata.6h), main = "RLE")
+
+# box plots of NUSE values for the normalized data, summarized to the core genes level
+NUSE(plm_rma_6h, type = "plot",las =3, cex.axis = 0.75, names = sampleNames(RMA_lpsdata.6h), main = "NUSE")
+
+```
+
+#### Intensity distribution Histograms and Box plots
+
+Histogram
+```{r intensity distribution, cache=TRUE, fig.align='center', fig.height=6, fig.width=8}
+
+library(RColorBrewer)
+usr.col <- brewer.pal(6, "Dark2")
+set.seed(1234)
+par(mfrow = c(1,2))
+
+hist(RMA_6h_filtered_anno, transfo=identity,  lty = rep(1, 6), lwd = rep(1.75, 6), col = usr.col, main = "Intensity histogram core genes")
+legend("topright", sampleNames(RMA_6h_filtered_anno), lty = rep(1, 6), lwd = rep(2, 6), col = usr.col, cex = 0.75)
+
+set.seed(1234)
+boxplot(RMA_6h_filtered_anno, transfo=identity,  col = usr.col, las =3, cex.axis = 0.75, names = sampleNames(RMA_6h_filtered_anno), main = "Intensity distributions core genes")
+```
+
+#### MA plots for RMA background-corrected/normalized data  
+
+```{r core genes within groups MA plots, cache=TRUE, fig.align='center', results='hold', collapse=TRUE}
+par(mfrow = c(1,1))
+yl = c(-4,2)
+# MA plot for the saline control group at 6 hours (rats 1,3,5)
+oligo::MAplot(RMA_6h_filtered_anno[, RMA_6h_filtered_anno$group == "sal.6h"], transfo=identity, pairs=TRUE, main="Saline 6 hours", ylim=yl)
+
+# MA plot for the lps treated group at 6 hours (rats 2,4,24)
+MAplot(RMA_6h_filtered_anno[, RMA_6h_filtered_anno$group == "lps.6h"], pairs=TRUE, main ="LPS 6 hours", ylim=yl)
+
+# MA plot for 6 h lps vs reference 6 h saline
+RMA_6h_filtered_anno$group <- relevel(RMA_6h_filtered_anno$group, ref="sal.6h")
+groups <- (RMA_6h_filtered_anno$group)
+suppressMessages(MAplot(RMA_6h_filtered_anno, groups=groups, which=2, refSamples=1))
+
+```
+
+#### Relationships between samples using heirarchical clustering:
+
+```{r heirarchical clustering, cache=TRUE}
+exprDat <- exprs(RMA_6h_filtered_anno)
+distance <- dist(t(exprDat), method = "maximum")
+clusters <- hclust(distance)
+plot(clusters)
+abline(h = 4.1, col = "red")
+```
+>>>>>>> 015d9bd588e0c19cb256adc330b3d6b19a0071ae
+
+#### R session information:
+```{r session info, echo=FALSE}
+sessionInfo()
+suppressMessages(gc())
+```
