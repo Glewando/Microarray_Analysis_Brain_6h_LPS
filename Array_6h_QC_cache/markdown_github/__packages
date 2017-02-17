@@ -1,0 +1,13 @@
+base
+BiocGenerics
+oligoClasses
+Biobase
+S4Vectors
+IRanges
+XVector
+Biostrings
+oligo
+RColorBrewer
+RSQLite
+DBI
+pd.ragene.1.0.st.v1
