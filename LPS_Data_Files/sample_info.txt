@@ -1,0 +1,13 @@
+	treatment	time	behavior	group
+Rat01.CEL	saline	6	none	sal.6h
+Rat03.CEL	saline	6	none	sal.6h
+Rat05.CEL	saline	6	none	sal.6h
+Rat02.CEL	LPS	6	none	lps.6h
+Rat04.CEL	LPS	6	none	lps.6h
+Rat24.CEL	LPS	6	none	lps.6h
+Rat19.CEL	saline	16	mwm	sal.16h
+Rat23.CEL	saline	16	mwm	sal.16h
+Rat27.CEL	saline	16	mwm	sal.16h
+Rat20.CEL	LPS	16	mwm	lps.16h
+Rat21.CEL	LPS	16	mwm	lps.16h
+Rat22.CEL	LPS	16	mwm	lps.16h
